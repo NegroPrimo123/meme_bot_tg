@@ -11,12 +11,10 @@ from telegram.ext import (
     filters
 )
 
-# Состояния для ConversationHandler
 GET_IMAGE, GET_TEXTS, SELECT_STYLE = range(3)
 
-TOKEN = "Хыхыхы"
+TOKEN = "8448999226:AAGE6T5N04-V7locUM9DbH6Ap-cVoYfBoA8"
 
-# Улучшенная клавиатура для главного меню
 main_keyboard = ReplyKeyboardMarkup(
     [
         [KeyboardButton("🎨 Создать мем")],
@@ -26,7 +24,6 @@ main_keyboard = ReplyKeyboardMarkup(
     input_field_placeholder="Выберите действие..."
 )
 
-# Стили для мемов с эмодзи
 STYLES = {
     "🎭 Классика": "classic",
     "🌚 Тёмный": "dark",
@@ -92,7 +89,6 @@ def apply_style(image, style):
     elif style == "contour":
         return image.filter(ImageFilter.CONTOUR)
     elif style == "rainbow":
-        # Создаем радужный эффект
         width, height = image.size
         rainbow = Image.new('RGB', (width, height))
         for y in range(height):
@@ -102,12 +98,11 @@ def apply_style(image, style):
         rainbow = rainbow.convert('RGB')
         return Image.blend(image.convert('RGB'), rainbow, 0.3)
     elif style == "ghost":
-        # Эффект призрака (полупрозрачный + размытие)
         ghost = image.convert('RGBA')
         ghost.putalpha(128)
         ghost = ghost.filter(ImageFilter.GaussianBlur(2))
         return ghost
-    else:  # classic
+    else:
         return image
 
 def create_meme(image_path, top_text, bottom_text, style="classic", output_path="meme.jpg"):
@@ -115,10 +110,10 @@ def create_meme(image_path, top_text, bottom_text, style="classic", output_path=
         image = Image.open(image_path)
         image = apply_style(image, style)
         
-        # Конвертируем обратно в RGB, если изображение в RGBA (например, после эффекта "призрак")
+
         if image.mode == 'RGBA':
             background = Image.new('RGB', image.size, (255, 255, 255))
-            background.paste(image, mask=image.split()[3])  # 3 - это альфа-канал
+            background.paste(image, mask=image.split()[3])
             image = background
         
         draw = ImageDraw.Draw(image)
@@ -135,18 +130,15 @@ def create_meme(image_path, top_text, bottom_text, style="classic", output_path=
             text_width = get_text_width(text)
             x = (image.width - text_width) / 2
             
-            # Обводка текста с эффектом
             for dx, dy in [(-2,-2), (-2,2), (2,-2), (2,2), (0,0)]:
                 color = "black" if (dx, dy) != (0,0) else "white"
                 if style == "rainbow":
                     color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
                 draw.text((x+dx, y+dy), text, font=font, fill=color)
 
-        # Верхний текст
         if top_text:
             draw_text(top_text, 10)
         
-        # Нижний текст
         if bottom_text:
             draw_text(bottom_text, image.height - 50 - font.size)
         
@@ -161,12 +153,12 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     await photo.download_to_drive("temp_meme.jpg")
     context.user_data['image_path'] = "temp_meme.jpg"
     
-    # Разбиваем кнопки стилей на несколько строк по 3 в каждой
+
     style_buttons = list(STYLES.keys())
     keyboard_layout = [
         style_buttons[i:i+3] for i in range(0, len(style_buttons), 3)
     ]
-    keyboard_layout.append([KeyboardButton("🚫 Отмена")])  # Добавляем кнопку отмены
+    keyboard_layout.append([KeyboardButton("🚫 Отмена")])
     
     await update.message.reply_text(
         "✅ Отлично! Теперь выбери стиль для мема:",
@@ -221,7 +213,6 @@ async def handle_texts(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
             reply_markup=main_keyboard
         )
     
-    # Очистка временных файлов
     for file in ["temp_meme.jpg", "result.jpg"]:
         if os.path.exists(file):
             os.remove(file)
@@ -258,7 +249,6 @@ def main():
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(conv_handler)
     
-    # Обработчик текстовых сообщений вне диалога
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_outside_conversation))
     
     app.run_polling()
