@@ -13,7 +13,7 @@ from telegram.ext import (
 
 GET_IMAGE, GET_TEXTS, SELECT_STYLE = range(3)
 
-TOKEN = "8448999226:AAGE6T5N04-V7locUM9DbH6Ap-cVoYfBoA8"
+TOKEN = "ВАШ ТОКЕН"
 
 main_keyboard = ReplyKeyboardMarkup(
     [
